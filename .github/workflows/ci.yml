@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [dev, staging, main]
+  pull_request:
+    branches: [staging, main]
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx prisma generate
+        env:
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+      - run: npm run lint
+      - run: npm run typecheck
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx prisma generate
+        env:
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+      - run: npm run build
+        env:
+          COGNITO_USER_POOL_ID: placeholder
+          COGNITO_CLIENT_ID: placeholder
+          AURORA_CLUSTER_ARN: placeholder
+          AURORA_SECRET_ARN: placeholder
+          AURORA_DATABASE_NAME: lightapp
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+          S3_BUCKET_NAME: placeholder
+          SQS_QUEUE_URL: placeholder
+          APPSYNC_API_URL: placeholder
+          APPSYNC_API_KEY: placeholder
+          SES_FROM_ADDRESS: noreply@example.com
+          NEXT_PUBLIC_COGNITO_USER_POOL_ID: placeholder
+          NEXT_PUBLIC_COGNITO_CLIENT_ID: placeholder
+          NEXT_PUBLIC_APPSYNC_URL: placeholder
+          NEXT_PUBLIC_APPSYNC_API_KEY: placeholder
